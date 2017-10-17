@@ -366,7 +366,7 @@ for ( s in 1:nspp) {
 		Elam1.p[s,rs]=l1.p[s,rs]*(1/D.p[s,rs]+(cr_mean.p[s,rs]*var_mu_Us.p[s,rs])/D.p[s,rs]^3
 			-(cr_mean.p[s,rs]*cov_e_mu_Us.p[s,rs])/D.p[s,rs]^2)+sr[s]-1
 		Elam2.p[s,rs]=(l1.p[s,rs]*(1/D.p[s,rs]) +sr[s]-1)^2+2*(l1.p[s,rs]*(1/D.p[s,rs]) +sr[s]-1)*
-			(var_mu_Us.p-cov_e_mu_Us.p)/D.p[s,rs]^4
+			(var_mu_Us.p[s,rs]-cov_e_mu_Us.p[s,rs])/D.p[s,rs]^4
 		gr1.n.p[s,rs] = exp(Elam1.p[s,rs]-0.5*Elam2.p[s,rs])
 		
 		#The fitness-density covariance 

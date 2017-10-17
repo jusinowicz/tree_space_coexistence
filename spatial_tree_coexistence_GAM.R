@@ -402,7 +402,7 @@ for ( s in 1:nspp) {
 		Elam1.k[s,rs]=l1.k[s,rs]*(1/D.k[s,rs]+(cr_mean.k[s,rs]*var_mu_Us.k[s,rs])/D.k[s,rs]^3
 			-(cr_mean.k[s,rs]*cov_e_mu_Us.k[s,rs])/D.k[s,rs]^2)+sr[s]-1
 		Elam2.k[s,rs]=(l1.k[s,rs]*(1/D.k[s,rs]) +sr[s]-1)^2+2*(l1.k[s,rs]*(1/D.k[s,rs]) +sr[s]-1)*
-			(var_mu_Us.k-cov_e_mu_Us.k)/D.k[s,rs]^4
+			(var_mu_Us.k[s,rs]-cov_e_mu_Us.k[s,rs])/D.k[s,rs]^4
 		gr1.n.k[s,rs] = exp(Elam1.k[s,rs]-0.5*Elam2.k[s,rs])
 		
 		#The fitness-density covariance 
@@ -650,10 +650,10 @@ dev.off()
 # to AijAji in each pairwise interaction. Graphs shown for two of the four 
 # scenarios: 1) Global, Kriged data; and 2) Limited, Kriged data.
 #=============================================================================
-var_mu_Us.gkS = l1.gk*cr_mean.gk/(D.gk)^3*var_mu_Us.gk 
-var_mu_Us.kS = l1.k*cr_mean.k/(D.k)^3*var_mu_Us.k 
-cov_e_mu_Us.gkS = l1.gk*cr_mean.gk/(D.gk)^2*cov_e_mu_Us.gk 
-cov_e_mu_Us.kS = l1.k*cr_mean.k/(D.k)^2*cov_e_mu_Us.k 
+var_mu_Us.gkS = 1/(2)^3*var_mu_Us.gk 
+var_mu_Us.kS = 1/(2)^3*var_mu_Us.k 
+cov_e_mu_Us.gkS = 1/(2)^2*cov_e_mu_Us.gk 
+cov_e_mu_Us.kS = 1/(2)^2*cov_e_mu_Us.k 
 
 
 par(mfrow=c(3,2))
@@ -671,54 +671,30 @@ hist(cov_lam_vc.k[cov_lam_vc.k > -2 & cov_lam_vc.k < 2] , xlim=c(-0.5,0.5), xlab
 	cex.lab=1.3, breaks=60)
 
 
-median(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2])
-#[1] 0.999257
-mean(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2])
-#[1] 0.9975443
-median(aijaji.k[aijaji.k > 0 & aijaji.k < 2])
-#[1] 0.135016
-mean(aijaji.k[aijaji.k > 0 & aijaji.k < 2])
-#[1] 0.3295115
 
 
-#Components
-#Variance
-hist(var_mu_Us.gk[var_mu_Us.gk < 10], breaks=60)
-hist(var_mu_Us.k[var_mu_Us.k < 10], breaks=60)
+#=============================================================================
+# Figure comparing histograms of the amount that each spatial mechanism contributes 
+# to AijAji in each pairwise interaction. Graphs shown for two of the four 
+# scenarios: 1) Global, Raw data; and 2) Limited,Raw data.
+#=============================================================================
+var_mu_Us.gS = 1/(2)^3*var_mu_Us.g
+var_mu_Us.pS = 1/(2)^3*var_mu_Us.p
+cov_e_mu_Us.gS = 1/(2)^2*cov_e_mu_Us.g 
+cov_e_mu_Us.pS = 1/(2)^2*cov_e_mu_Us.p
 
-median(var_mu_Us.gk[var_mu_Us.gk < 10])
-#[1] 0.9196131
-median(var_mu_Us.k[var_mu_Us.k < 10])
-#[1] 0.7191323
-mean(var_mu_Us.gk[var_mu_Us.gk < 10])
-#[1] 1.715582
-mean(var_mu_Us.k[var_mu_Us.k < 10])
-#[1] 1.756273
 
-#Covariance
-hist(cov_e_mu_Us.gk[cov_e_mu_Us.gk < 2 & cov_e_mu_Us.gk > -2], breaks=60)
-hist(cov_e_mu_Us.k[cov_e_mu_Us.k < 2 & cov_e_mu_Us.k > -2], breaks=60)
-
-median(cov_e_mu_Us.gk[cov_e_mu_Us.gk < 2 & cov_e_mu_Us.gk > -2])
-#[1] -0.01132957
-mean(cov_e_mu_Us.k[cov_e_mu_Us.k < 2 & cov_e_mu_Us.k > -2])
-#[1] -0.01260359
-median(cov_e_mu_Us.gk[cov_e_mu_Us.gk < 2 & cov_e_mu_Us.gk > -2])
-#[1] -0.01132957
-mean(cov_e_mu_Us.k[cov_e_mu_Us.k < 2 & cov_e_mu_Us.k > -2])
-#[1] -0.01260359
-
-#FD Covariance
-hist(cov_lam_vc.gk[cov_lam_vc.gk < 2 & cov_lam_vc.gk > -2], breaks=60)
-hist(cov_lam_vc.k[cov_lam_vc.k < 2 & cov_lam_vc.k > -2], breaks=60)
-
-median(cov_lam_vc.gk[cov_lam_vc.gk < 2 & cov_lam_vc.gk > -2])
-#[1] 0
-mean(cov_lam_vc.k[cov_lam_vc.k < 2 & cov_lam_vc.k> -2])
-#[1] 0.2559078
-median(cov_lam_vc.gk[cov_lam_vc.gk < 2 & cov_lam_vc.gk > -2])
-#[1] 0
-mean(cov_lam_vc.k[cov_lam_vc.k< 2 & cov_lam_vc.k > -2])
-#[1] 0.2559078
-
+par(mfrow=c(3,2))
+hist(var_mu_Us.gS[var_mu_Us.g > 0 & var_mu_Us.g  < 3] , xlim=c(0,1), xlab=' ', main="NCV: Global, Raw", 
+	cex.lab=1.3, breaks=60)
+hist(var_mu_Us.pS[var_mu_Us.p > 0 & var_mu_Us.p < 3] , xlim=c(0,1), xlab=' ', main="NCV: Limited, Raw", 
+	cex.lab=1.3, breaks=60)
+hist(cov_e_mu_Us.gS[cov_e_mu_Us.g > -0.5 & cov_e_mu_Us.g < 0.5] , xlim=c(-0.5,0.5), xlab=' ', main="SE: Global, Raw", 
+	cex.lab=1.3, breaks=60)
+hist(cov_e_mu_Us.pS[cov_e_mu_Us.p > -0.5 & cov_e_mu_Us.p < 0.5] , xlim=c(-0.5,0.5), xlab=' ', main="SE: Limited, Raw", 
+	cex.lab=1.3, breaks=60)
+hist(cov_lam_vc.g[cov_lam_vc.g > -2 & cov_lam_vc.g < 2] , xlim=c(-0.5,0.5), xlab=' ', main="FDC: Global, Raw", 
+	cex.lab=1.3, breaks=60)
+hist(cov_lam_vc.p[cov_lam_vc.p > -2 & cov_lam_vc.p < 2] , xlim=c(-0.5,0.5), xlab=' ', main="FDC: Limited, Raw", 
+	cex.lab=1.3, breaks=60)
 
