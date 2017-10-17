@@ -365,7 +365,8 @@ for ( s in 1:nspp) {
 		#Components of the IGR
 		Elam1.p[s,rs]=l1.p[s,rs]*(1/D.p[s,rs]+(cr_mean.p[s,rs]*var_mu_Us.p[s,rs])/D.p[s,rs]^3
 			-(cr_mean.p[s,rs]*cov_e_mu_Us.p[s,rs])/D.p[s,rs]^2)+sr[s]-1
-		Elam2.p[s,rs]=Elam1.p[s,rs]^2
+		Elam2.p[s,rs]=(l1.p[s,rs]*(1/D.p[s,rs]) +sr[s]-1)^2+2*(l1.p[s,rs]*(1/D.p[s,rs]) +sr[s]-1)*
+			(var_mu_Us.p-cov_e_mu_Us.p)/D.p[s,rs]^4
 		gr1.n.p[s,rs] = exp(Elam1.p[s,rs]-0.5*Elam2.p[s,rs])
 		
 		#The fitness-density covariance 
@@ -380,9 +381,9 @@ for ( s in 1:nspp) {
 		#The full IGR
 		gr1.p[s,rs] = gr1.n.p[s,rs]+cov_lam_vc.p[s,rs]
 
+		save(file="spatial_coexistence_disp_norm_BCI.var", "l1.p","y.p", "cr_mean.p","D.p","var_mu_Us.p","cov_e_mu_Us.p",
+			"cov_lam_vc.p","Elam1.p", "Elam2.p", "gr1.n.p", "gr1.p")
 
 	}
 }
 
-save(file="spatial_coexistence_disp_norm_BCI.var", "l1.p","y.p", "cr_mean.p","D.p","var_mu_Us.p","cov_e_mu_Us.p",
-"cov_lam_vc.p","Elam1.p", "Elam2.p", "gr1.n.p", "gr1.p")

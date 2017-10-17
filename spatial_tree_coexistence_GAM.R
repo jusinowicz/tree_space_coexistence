@@ -401,7 +401,8 @@ for ( s in 1:nspp) {
 		#Components of the IGR
 		Elam1.k[s,rs]=l1.k[s,rs]*(1/D.k[s,rs]+(cr_mean.k[s,rs]*var_mu_Us.k[s,rs])/D.k[s,rs]^3
 			-(cr_mean.k[s,rs]*cov_e_mu_Us.k[s,rs])/D.k[s,rs]^2)+sr[s]-1
-		Elam2.k[s,rs]=Elam1.k[s,rs]^2
+		Elam2.k[s,rs]=(l1.k[s,rs]*(1/D.k[s,rs]) +sr[s]-1)^2+2*(l1.k[s,rs]*(1/D.k[s,rs]) +sr[s]-1)*
+			(var_mu_Us.k-cov_e_mu_Us.k)/D.k[s,rs]^4
 		gr1.n.k[s,rs] = exp(Elam1.k[s,rs]-0.5*Elam2.k[s,rs])
 		
 		#The fitness-density covariance 
@@ -427,25 +428,248 @@ for ( s in 1:nspp) {
 
 
 #Some after-analysis 
+#Load the results from the kriged data set.
+load("spatial_coexistence_global_kriged_BCI.var") #Global values .gk
+load("spatial_coexistence_disp_kriged_BCI_norm1B.var") #Limited dispersal .k
+#Load the results from the raw data.
+load("spatial_coexistence_global_BCI.var") #Global values .g
+load("spatial_coexistence_disp_norm_BCI.var") #Limited dispersal .p
 
-load("spatial_coexistence_global_kriged_BCI.var")
-load("spatial_coexistence_disp_kriged_BCI_norm1B.var")
-load("spatial_coexistence_disp_kriged_BCI_norm1B.var")
 
 #These are the most analagous to the AijAji in temporal paper. 
 
 aijaji.gk = 1/gr1.gk*t(1/gr1.gk)
 aijaji.p = 1/gr1.p*t(1/gr1.p)
 aijaji.k = 1/gr1.k*t(1/gr1.k)
+aijaji.g = 1/gr1.g*t(1/gr1.g)
 
 aijaji.gk = aijaji.gk[lower.tri(aijaji.gk)]
 aijaji.p = aijaji.p[lower.tri(aijaji.p)]
 aijaji.k = aijaji.k[lower.tri(aijaji.k)]
+aijaji.g = aijaji.g[lower.tri(aijaji.g)]
 
-par(mfrow=c(2,1))
-hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2] ,breaks=60)
-hist(aijaji.k[aijaji.k > 0 & aijaji.k < 2],breaks=60)
-hist(aijaji.p[aijaji.p > 0 & aijaji.p < 2],breaks=60)
+#Calculate the percentage contribution of each spatial mechanism, to each 
+#pairwise value of AijAji. 
+
+#=============================================================================
+# Figure comparing histograms of AijAji and their median values, for each of the
+# four different sets of assumptions: 1) Global dispersal/competition, Kriged data;
+# 2) Limited dispersal/competition, Kriged data; 3) Global, Raw data; and 
+# 4) Limited, Raw data. 
+#=============================================================================
+
+pdf(file='all4_aijaji_BCI1.pdf', height=7.5, width=7.5, onefile=TRUE, family='Helvetica', pointsize=14)
+par(mfrow=c(2,2))
+hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2] , xlim=c(0,1.2), xlab=' ', main="Global, Kriged", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2],
+		breaks=60,plot=F)$counts)/length(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2]),digits=2)))
+
+hist(aijaji.k[aijaji.k > 0 & aijaji.k < 1.2], xlim=c(0,1.2), xlab=' ', main="Limited, Kriged", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijaji.k[aijaji.k > 0 & aijaji.k < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijaji.k[aijaji.k > 0 & aijaji.k < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijaji.k[aijaji.k > 0 & aijaji.k < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijaji.k[aijaji.k > 0 & aijaji.k < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijaji.k[aijaji.k > 0 & aijaji.k < 1.2],
+		breaks=60,plot=F)$counts)/length(aijaji.k[aijaji.k > 0 & aijaji.k < 1.2]),digits=2)))
+
+hist(aijaji.g[aijaji.g > 0 & aijaji.g < 1.2] , xlim=c(0,1.2), xlab=' ', main="Global, Raw", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijaji.g[aijaji.g > 0 & aijaji.g < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijaji.g[aijaji.g > 0 & aijaji.g < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijaji.g[aijaji.g > 0 & aijaji.g < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijaji.g[aijaji.g > 0 & aijaji.g < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijaji.g[aijaji.g > 0 & aijaji.g < 1.2],
+		breaks=60,plot=F)$counts)/length(aijaji.g[aijaji.g > 0 & aijaji.g < 1.2]),digits=2)))
+
+hist(aijaji.p[aijaji.p > 0 & aijaji.p < 1.2], xlim=c(0,1.2), xlab=' ', main="Limited, Raw", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijaji.p[aijaji.p > 0 & aijaji.p < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijaji.p[aijaji.p > 0 & aijaji.p < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijaji.p[aijaji.p > 0 & aijaji.p < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijaji.p[aijaji.p > 0 & aijaji.p < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijaji.p[aijaji.p > 0 & aijaji.p < 1.2],
+		breaks=60,plot=F)$counts)/length(aijaji.p[aijaji.p > 0 & aijaji.p < 1.2]),digits=2)))
+
+dev.off()
+
+
+#=============================================================================
+# Figure comparing histograms of the amount that each spatial mechanism contributes 
+# to AijAji in each pairwise interaction. Graphs shown for two of the four 
+# scenarios: 1) Global, Kriged data; and 2) Limited, Kriged data.
+#=============================================================================
+var_mu_Us.gkS = l1.gk*cr_mean.gk/(D.gk)^3*var_mu_Us.gk 
+var_mu_Us.kS = l1.k*cr_mean.k/(D.k)^3*var_mu_Us.k 
+cov_e_mu_Us.gkS = l1.gk*cr_mean.gk/(D.gk)^2*cov_e_mu_Us.gk 
+cov_e_mu_Us.kS = l1.k*cr_mean.k/(D.k)^2*cov_e_mu_Us.k 
+
+
+par(mfrow=c(3,2))
+hist(var_mu_Us.gkS[var_mu_Us.gk > 0 & var_mu_Us.gk < 3] , xlim=c(0,1), xlab=' ', main="NCV: Global, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(var_mu_Us.kS[var_mu_Us.k > 0 & var_mu_Us.k < 3] , xlim=c(0,1), xlab=' ', main="NCV: Limited, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_e_mu_Us.gkS[cov_e_mu_Us.gk > -0.5 & cov_e_mu_Us.gk < 0.5] , xlim=c(-0.5,0.5), xlab=' ', main="SE: Global, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_e_mu_Us.kS[cov_e_mu_Us.k > -0.5 & cov_e_mu_Us.k < 0.5] , xlim=c(-0.5,0.5), xlab=' ', main="SE: Limited, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_lam_vc.gk[cov_lam_vc.gk > -2 & cov_lam_vc.gk < 2] , xlim=c(-0.5,0.5), xlab=' ', main="FDC: Global, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_lam_vc.k[cov_lam_vc.k > -2 & cov_lam_vc.k < 2] , xlim=c(-0.5,0.5), xlab=' ', main="FDC: Limited, Kriged", 
+	cex.lab=1.3, breaks=60)
+
+hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2] , xlim=c(0,1.2), xlab=' ', main="NCV: Global, Kriged", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2],
+		breaks=60,plot=F)$counts)/length(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 1.2]),digits=2)))
+
+
+
+
+
+#These are the most analagous to the AijAji in temporal paper. 
+
+Elam1w.k = l1.k*(1/2+(var_mu_Us.k)/2^3
+			-(cov_e_mu_Us.k)/2^2)+0.99-1
+#Elam2w.k = (var_mu_Us.k-cov_e_mu_Us.k)/2^4
+Elam2w.k =  (l1.k*(1/2) +0.99-1)^2+2*(l1.k*(1/2) +0.99-1)*
+			(var_mu_Us.k-cov_e_mu_Us.k)/2^4
+gr1w.k = exp(Elam1w.k-0.5*Elam2w.k)+cov_lam_vc.k
+
+Elam1w.gk = l1.gk*(1/2+(var_mu_Us.gk)/2^3
+			-(cov_e_mu_Us.gk)/2^2)+0.99-1
+#Elam2w.gk = (var_mu_Us.gk-cov_e_mu_Us.gk)/2^4
+Elam2w.gk =  (l1.gk*(1/2) +0.99-1)^2+2*(l1.gk*(1/2) +0.99-1)*
+			(var_mu_Us.gk-cov_e_mu_Us.gk)/2^4
+gr1w.gk = exp(Elam1w.gk-0.5*Elam2w.gk)+cov_lam_vc.gk
+
+Elam1w.p = l1.p*(1/2+(var_mu_Us.p)/2^3
+			-(cov_e_mu_Us.p)/2^2)+0.99-1
+Elam2w.p =  (l1.p*(1/2) +0.99-1)^2+2*(l1.p*(1/2) +0.99-1)*
+			(var_mu_Us.p-cov_e_mu_Us.p)/2^4
+gr1w.p = exp(Elam1w.p-0.5*Elam2w.p)+cov_lam_vc.p
+
+Elam1w.g = l1.g*(1/2+(var_mu_Us.g)/2^3
+			-(cov_e_mu_Us.g)/2^2)+0.99-1
+Elam2w.g =  (l1.g*(1/2) +0.99-1)^2+2*(l1.g*(1/2) +0.99-1)*
+			(var_mu_Us.g-cov_e_mu_Us.g)/2^4
+gr1w.g = exp(Elam1w.g-0.5*Elam2w.g)+cov_lam_vc.g
+
+aijajiw.gk = 1/gr1w.gk*t(1/gr1w.gk)
+aijajiw.p = 1/gr1w.p*t(1/gr1w.p)
+aijajiw.k = 1/gr1w.k*t(1/gr1w.k)
+aijajiw.g = 1/gr1w.g*t(1/gr1w.g)
+
+aijajiw.gk = aijajiw.gk[lower.tri(aijajiw.gk)]
+aijajiw.p = aijajiw.p[lower.tri(aijajiw.p)]
+aijajiw.k = aijajiw.k[lower.tri(aijajiw.k)]
+aijajiw.g = aijajiw.g[lower.tri(aijajiw.g)]
+
+
+#Calculate the percentage contribution of each spatial mechanism, to each 
+#pairwise value of AijAji. 
+
+#=============================================================================
+# Figure comparing histograms of AijAji and their median values, for each of the
+# four different sets of assumptions: 1) Global dispersal/competition, Kriged data;
+# 2) Limited dispersal/competition, Kriged data; 3) Global, Raw data; and 
+# 4) Limited, Raw data. 
+#=============================================================================
+
+pdf(file='all4_aijaji_stand_BCI1.pdf', height=7.5, width=7.5, onefile=TRUE, family='Helvetica', pointsize=14)
+par(mfrow=c(2,2))
+hist(aijajiw.gk[aijajiw.gk > 0 & aijajiw.gk < 1.2] , xlim=c(0,1.2), xlab=' ', main="Global, Kriged", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijajiw.gk[aijajiw.gk > 0 & aijajiw.gk < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijajiw.gk[aijajiw.gk > 0 & aijajiw.gk < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijajiw.gk[aijajiw.gk > 0 & aijajiw.gk < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijajiw.gk[aijajiw.gk > 0 & aijajiw.gk < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijajiw.gk[aijajiw.gk > 0 & aijajiw.gk < 1.2],
+		breaks=60,plot=F)$counts)/length(aijajiw.gk[aijajiw.gk > 0 & aijajiw.gk < 1.2]),digits=2)))
+
+hist(aijajiw.k[aijajiw.k > 0 & aijajiw.k < 1.2], xlim=c(0,1.2), xlab=' ', main="Limited, Kriged", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijajiw.k[aijajiw.k > 0 & aijajiw.k < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijajiw.k[aijajiw.k > 0 & aijajiw.k < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijajiw.k[aijajiw.k > 0 & aijajiw.k < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijajiw.k[aijajiw.k > 0 & aijajiw.k < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijajiw.k[aijajiw.k > 0 & aijajiw.k < 1.2],
+		breaks=60,plot=F)$counts)/length(aijajiw.k[aijajiw.k > 0 & aijajiw.k < 1.2]),digits=2)))
+
+hist(aijajiw.g[aijajiw.g > 0 & aijajiw.g < 1.2] , xlim=c(0,1.2), xlab=' ', main="Global, Raw", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijajiw.g[aijajiw.g > 0 & aijajiw.g < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijajiw.g[aijajiw.g > 0 & aijajiw.g < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijajiw.g[aijajiw.g > 0 & aijajiw.g < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijajiw.g[aijajiw.g > 0 & aijajiw.g < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijajiw.g[aijajiw.g > 0 & aijajiw.g < 1.2],
+		breaks=60,plot=F)$counts)/length(aijajiw.g[aijajiw.g > 0 & aijajiw.g < 1.2]),digits=2)))
+
+hist(aijajiw.p[aijajiw.p > 0 & aijajiw.p < 1.2], xlim=c(0,1.2), xlab=' ', main="Limited, Raw", 
+	xaxt='n', yaxt='n',cex.lab=1.3, breaks=60)
+#Only put the median on the x axis
+axis(side=1, labels=F, at=c(0,round(median(aijajiw.p[aijajiw.p > 0 & aijajiw.p < 2]),2),1))
+axis(side=1, labels=T, at=c(round(median(aijajiw.p[aijajiw.p > 0 & aijajiw.p < 2]),2)))
+axis(side=1, labels=T, at=c(0,1.2))
+axis(side=2, labels=F, at=c(0,max(hist(aijajiw.p[aijajiw.p > 0 & aijajiw.p < 1.2],breaks=60,plot=F)$counts)))
+axis(side=2, at=max(hist(aijajiw.p[aijajiw.p > 0 & aijajiw.p < 1.2],breaks=60,plot=F)$counts),
+	labels=c(round(max(hist(aijajiw.p[aijajiw.p > 0 & aijajiw.p < 1.2],
+		breaks=60,plot=F)$counts)/length(aijajiw.p[aijajiw.p > 0 & aijajiw.p < 1.2]),digits=2)))
+
+dev.off()
+
+
+#=============================================================================
+# Figure comparing histograms of the amount that each spatial mechanism contributes 
+# to AijAji in each pairwise interaction. Graphs shown for two of the four 
+# scenarios: 1) Global, Kriged data; and 2) Limited, Kriged data.
+#=============================================================================
+var_mu_Us.gkS = l1.gk*cr_mean.gk/(D.gk)^3*var_mu_Us.gk 
+var_mu_Us.kS = l1.k*cr_mean.k/(D.k)^3*var_mu_Us.k 
+cov_e_mu_Us.gkS = l1.gk*cr_mean.gk/(D.gk)^2*cov_e_mu_Us.gk 
+cov_e_mu_Us.kS = l1.k*cr_mean.k/(D.k)^2*cov_e_mu_Us.k 
+
+
+par(mfrow=c(3,2))
+hist(var_mu_Us.gkS[var_mu_Us.gk > 0 & var_mu_Us.gk < 3] , xlim=c(0,1), xlab=' ', main="NCV: Global, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(var_mu_Us.kS[var_mu_Us.k > 0 & var_mu_Us.k < 3] , xlim=c(0,1), xlab=' ', main="NCV: Limited, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_e_mu_Us.gkS[cov_e_mu_Us.gk > -0.5 & cov_e_mu_Us.gk < 0.5] , xlim=c(-0.5,0.5), xlab=' ', main="SE: Global, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_e_mu_Us.kS[cov_e_mu_Us.k > -0.5 & cov_e_mu_Us.k < 0.5] , xlim=c(-0.5,0.5), xlab=' ', main="SE: Limited, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_lam_vc.gk[cov_lam_vc.gk > -2 & cov_lam_vc.gk < 2] , xlim=c(-0.5,0.5), xlab=' ', main="FDC: Global, Kriged", 
+	cex.lab=1.3, breaks=60)
+hist(cov_lam_vc.k[cov_lam_vc.k > -2 & cov_lam_vc.k < 2] , xlim=c(-0.5,0.5), xlab=' ', main="FDC: Limited, Kriged", 
+	cex.lab=1.3, breaks=60)
+
 
 median(aijaji.gk[aijaji.gk > 0 & aijaji.gk < 2])
 #[1] 0.999257
@@ -496,4 +720,5 @@ median(cov_lam_vc.gk[cov_lam_vc.gk < 2 & cov_lam_vc.gk > -2])
 #[1] 0
 mean(cov_lam_vc.k[cov_lam_vc.k< 2 & cov_lam_vc.k > -2])
 #[1] 0.2559078
+
 
