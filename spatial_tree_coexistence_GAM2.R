@@ -10,15 +10,24 @@
 # from the data itself. 
 #
 # This version krigs missing spatial data using gstat
-# This version cokrings with adult trees
 #
-# This code is grouped into [] parts: 
+# This code is grouped into [4] parts: 
 #	1. Load the data and pick out useful species (based on criteria of total 
 #		number of samples, and total number of years with samples).
-#	2. Calculate the resident distribution in the absence of the invader.
-#		A. Create the spatiotemporal recruitment data for an arbitrary of 
-#		generations based on repeated bootstrapping of the original data set.
-#		B. Run the population dynamics for the resident. 
+#	2. Use a GAM to krige recruit counts in the missing spatial locations
+#	3. Calcuate the spatial components for pairwise coexistence, without any 
+# 	 	simulation of population dyanmics. These components include:
+#		The resident stationary distribution in the absence of the invader. 
+#		The spatial storage effect. 	
+#		Non-linear competitive variance. 
+#		Fitness-density covariance. 
+#		Total invasion growth rates.
+#	4. Calculate (and graph) overall distributions of pairwise coexistence, 
+#		measured by AijAji. These are equivalent to the inverse of the 
+# 		the IGR when all fitness differences have been removed (thus the 
+#		the Aij represent niche differences).
+#		A. This part also calculates each of the spatial coexistence mechanisms
+#			as a proportionate contribution to the total IGR!  
 #	
 ###############################################################################
 #=============================================================================
